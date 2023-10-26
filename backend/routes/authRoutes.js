@@ -17,4 +17,53 @@ router.post("/register", async(req,res)=>{
 
 });
 
+//testando se as senhas são iguais
+if(password != confirmpassword){
+    return res.status(400).json({error : "As senhas não conferem."})
+};
+
+//conferindo se o usuário existe
+
+const emailExists = await User.findOne({email : email});
+
+if(emailExists){
+    return res.status(400).json({error : "O e-mail informado já existe."})
+};
+
+//criando senha com bcyrpt
+
+const salt = await bcrypt.genSalt(12);
+const passwordHash = await bcrypt.hash(password, salt);
+
+//criando o usuário após as validações do sistema
+
+const user = new User({
+    name : name,
+    email : email,
+    password: passwordHash
+});
+
+//montando um try catch para pegar outros erros e afins
+
+try{
+    const newUser = await user.save();
+
+//criando o token do usuário 
+
+const token = jwt.sign(
+    //payload
+    {
+        name : newUser.name,
+        id : newUser._id
+    },
+    "segredo" //isso tonar o nosso token único
+);
+
+//retornar o token para o projeto e mandar a mensagem
+
+res.json({error: null, msg: "Você fez o cadastro com sucesso", token: token, userId:newUser._id});
+}catch(error){
+    res.status(400).json({error});
+};
+
 module.exports = router;
