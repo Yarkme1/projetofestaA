@@ -66,4 +66,27 @@ res.json({error: null, msg: "Você fez o cadastro com sucesso", token: token, us
     res.status(400).json({error});
 };
 
+//criando a rota de login
+
+router.post("/login", async(req, res)=>{
+    const email = req.body.email;
+    const password = req.body.password;
+
+    //e se o usuário já existe?
+    const user = await User.findOne({email : email});
+
+    if(!user){
+        return res.status(400).json({error : "E-mail não cadastrado, usuário não existe."})
+    }
+});
+
+
+//testando se a senha informada foi correta
+
+const checkPassword = await.bcrypt.compare(password, user.password);
+
+if (!checkPassword){
+    return res.status(400).json({error : "Senha inválida"});
+}
+
 module.exports = router;
